@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: redis-deployment-s1
+  name: redis-deployment-s1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-pod-s1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: redis-pod-s1
+    spec:
+      containers:
+        - image: redis:alpine
+          name: redis-container
+          command:
+            - redis-server
+            - "/redis-master-data/redis.conf"
+            - "--sentinel"
+          ports:
+            - containerPort: 5005
+          resources:
+            requests:
+              cpu: 1
+          volumeMounts:
+            - name: data
+              mountPath: /redis-master-data
+            - name: config
+              mountPath: /redis-master
+      initContainers:
+        - name: copy
+          image: busybox:latest
+          command: [ 'sh', '-c', "cp /redis-master/redis.conf /redis-master-data/" ]
+          volumeMounts:
+            - name: data
+              mountPath: /redis-master-data
+            - name: config
+              mountPath: /redis-master
+      volumes:
+        - name: config
+          configMap:
+            name: redis-sentinel-config-s1
+            items:
+              - key: redis-config
+                path: redis.conf
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service-s1
+spec:
+  ports:
+    - nodePort: 30085
+      port: 5005
+      protocol: TCP
+      targetPort: 5005
+  selector:
+    app: redis-pod-s1
+  type: NodePort

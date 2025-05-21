@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: redis-ready
+  data:
+    redis:
+      database: 0
+      host: localhost
+      port: 8081
+      timeout: 60000

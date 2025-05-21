@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config-master
+data:
+  redis-config: |
+    maxmemory 128mb
+    maxmemory-policy allkeys-lru
+    save 60 1000
+    appendonly yes
+    replica-announce-ip redis-service-master
+    replica-announce-port 6379
+    client-output-buffer-limit replica 512mb 256mb 120
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config-rep1
+data:
+  redis-config: |
+    maxmemory 128mb
+    maxmemory-policy allkeys-lru
+    save 60 1000
+    appendonly yes
+    replicaof redis-service-master 6379
+    replica-announce-ip redis-service-rep1
+    replica-announce-port 6379
+    client-output-buffer-limit replica 512mb 256mb 120
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config-rep2
+data:
+  redis-config: |
+    maxmemory 128mb
+    maxmemory-policy allkeys-lru
+    save 60 1000
+    appendonly yes
+    replicaof redis-service-master 6379
+    replica-announce-ip redis-service-rep2
+    replica-announce-port 6379
+    client-output-buffer-limit replica 512mb 256mb 120
